@@ -13,6 +13,7 @@ pub fn build(b: *std.Build) void {
         },
     );
     const wolfssl_lib = wolfssl.artifact("wolfssl");
+    b.installArtifact(wolfssl_lib);
 
     const wolfssl_module = b.addModule("zigwolfssl", .{
         .source_file = .{ .path = "src/main.zig" },
