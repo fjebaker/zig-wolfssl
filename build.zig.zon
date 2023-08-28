@@ -1,0 +1,10 @@
+.{
+    .name = "zig-wolfssl",
+    .version = "0.1.0",
+    .dependencies = .{
+        .wolfssl = .{
+            .url = "https://github.com/fjebaker/wolfssl/archive/master.tar.gz",
+            .hash = "1220c9f878c6a790cf1405c159ac2dd94a4f579bf45fc2911eaa2fbd87b833a85d21",
+        },
+    },
+}
