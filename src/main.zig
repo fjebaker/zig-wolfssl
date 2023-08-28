@@ -2,12 +2,12 @@ const std = @import("std");
 const testing = std.testing;
 
 pub const c = @import("c.zig");
-const retCheck = @import("wolfssl-codes.zig").retCheck;
-
+pub const codes = @import("wolfssl-codes.zig");
 pub const Context = @import("Context.zig");
+pub const SslConnection = @import("SslConnection.zig");
 
 pub fn init() !void {
-    try retCheck(c.wolfSSL_Init());
+    try codes.retCheck(c.wolfSSL_Init());
 }
 
 pub fn deinit() void {
