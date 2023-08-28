@@ -4,7 +4,7 @@
     .dependencies = .{
         .wolfssl = .{
             .url = "https://github.com/fjebaker/wolfssl/archive/master.tar.gz",
-            .hash = "1220c9f878c6a790cf1405c159ac2dd94a4f579bf45fc2911eaa2fbd87b833a85d21",
+            .hash = "12208775f661fc506baabbdd77ecf119552d2e7ceb2510fa2c378c9174c7c5cdf1c4",
         },
     },
 }
