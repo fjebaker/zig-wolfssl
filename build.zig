@@ -10,6 +10,11 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .target = target,
             .shared = false,
+            .debug = b.option(
+                bool,
+                "wolfssl-debug",
+                "Enable debug for wolfssl.",
+            ) orelse false,
         },
     );
     const wolfssl_lib = wolfssl.artifact("wolfssl");
