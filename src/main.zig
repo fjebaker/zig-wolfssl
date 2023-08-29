@@ -17,7 +17,7 @@ pub const Ssl = struct {
     pub const WriteError = status.WriteError;
 
     pub const Reader = std.io.Reader(*Ssl, ReadError, read);
-    pub const Writer = std.io.Reader(*Ssl, WriteError, write);
+    pub const Writer = std.io.Writer(*Ssl, WriteError, write);
 
     ssl: *c.WOLFSSL,
     stream: std.net.Stream,
