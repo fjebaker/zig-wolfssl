@@ -1,7 +1,6 @@
 const std = @import("std");
 
 const zzl = @import("zigwolfssl");
-const c = zzl.c;
 
 pub fn main() !void {
     try zzl.init();
@@ -28,7 +27,7 @@ pub fn main() !void {
 
         std.debug.print("Accepted\n", .{});
 
-        var ssl = zzl.Ssl.init(&ctx, &conn.stream);
+        var ssl = zzl.Ssl.init(ctx, conn.stream);
         defer ssl.deinit();
 
         const r_size = try ssl.read(&buffer);

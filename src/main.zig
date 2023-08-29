@@ -20,15 +20,11 @@ pub const Ssl = struct {
     pub const Writer = std.io.Reader(*Ssl, WriteError, write);
 
     ssl: *c.WOLFSSL,
+    stream: std.net.Stream,
 
-    pub fn init(ctx: *Context, stream: *std.net.Stream) Ssl {
+    pub fn init(ctx: Context, stream: std.net.Stream) Ssl {
         var ssl = c.wolfSSL_new(ctx.ctx).?;
-
-        // set IO contexts
-        c.wolfSSL_SetIOReadCtx(ssl, stream);
-        c.wolfSSL_SetIOWriteCtx(ssl, stream);
-
-        return .{ .ssl = ssl };
+        return .{ .ssl = ssl, .stream = stream };
     }
 
     pub fn deinit(self: *Ssl) void {
@@ -44,7 +40,18 @@ pub const Ssl = struct {
         return .{ .context = self };
     }
 
+    /// Set the context IO context from a stack offset
+    /// just before we do any IO so that the pointer to the stream
+    /// is always valid
+    ///
+    inline fn setContext(self: *Ssl) void {
+        c.wolfSSL_SetIOReadCtx(self.ssl, &self.stream);
+        c.wolfSSL_SetIOWriteCtx(self.ssl, &self.stream);
+    }
+
     pub fn read(self: *Ssl, buffer: []u8) ReadError!usize {
+        self.setContext();
+
         const len: c_int = @intCast(buffer.len);
         const read_bytes = c.wolfSSL_read(self.ssl, buffer.ptr, len);
         if (read_bytes < 0) {
@@ -57,6 +64,8 @@ pub const Ssl = struct {
     }
 
     pub fn write(self: *Ssl, buffer: []const u8) WriteError!usize {
+        self.setContext();
+
         const len: c_int = @intCast(buffer.len);
         const write_bytes = c.wolfSSL_write(self.ssl, buffer.ptr, len);
         if (write_bytes < 0) {
