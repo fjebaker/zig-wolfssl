@@ -1,57 +1,15 @@
 const std = @import("std");
 const c = @import("c.zig");
 
-pub const WolfSslErrors = error{WolfSSLError};
+pub const WolfSslErrors = error{
+    WolfSSLError,
+    WolfSSLUnknownError,
+};
 
-pub fn isSuccess(code: c_int) bool {
-    return code == @intFromEnum(WolfSslStatusCodes.SUCCESS);
-}
+pub const ReadError = std.net.Stream.ReadError;
+pub const WriteError = std.net.Stream.WriteError;
 
-pub fn retCheck(code: c_int) !void {
-    if (!isSuccess(code)) {
-        if (wolfSslErrorToReadError(code)) |err| return err;
-        if (wolfSslErrorToWriteError(code)) |err| return err;
-        return raiseGenericError(code);
-    }
-}
-
-pub fn raiseGenericError(code: c_int) !void {
-    const err = std.meta.intToEnum(WolfSslStatusCodes, code) catch
-        WolfSslStatusCodes.UNKNOWN;
-
-    var buffer: [c.WOLFSSL_MAX_ERROR_SZ + 1]u8 = undefined;
-    const err_string = c.wolfSSL_ERR_error_string(
-        std.math.cast(c_ulong, -code) orelse 0,
-        &buffer,
-    );
-    const string = @as(?[*:0]const u8, err_string) orelse "unknown";
-    const err_name = std.mem.sliceTo(string, 0);
-
-    var writer = std.io.getStdErr().writer();
-    try writer.print("WolfSSL Error: {d} {s} : {any}\n", .{ code, err_name, err });
-
-    return WolfSslErrors.WolfSSLError;
-}
-
-pub fn wolfSslErrorToReadError(err: c_int) ?std.net.Stream.ReadError {
-    return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
-        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
-        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
-        .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
-        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
-        else => null,
-    };
-}
-pub fn wolfSslErrorToWriteError(err: c_int) ?std.net.Stream.WriteError {
-    return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
-        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
-        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
-        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
-        else => null,
-    };
-}
-
-pub fn readErrorToWolfSslError(err: std.net.Stream.ReadError) c_int {
+pub fn readErr(err: std.net.Stream.ReadError) c_int {
     const code = switch (err) {
         error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
@@ -61,13 +19,54 @@ pub fn readErrorToWolfSslError(err: std.net.Stream.ReadError) c_int {
     return @intFromEnum(code);
 }
 
-pub fn writeErrorToWolfSslError(err: std.net.Stream.WriteError) c_int {
+pub fn writeErr(err: std.net.Stream.WriteError) c_int {
     const code = switch (err) {
         error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
         else => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_GENERAL,
     };
     return @intFromEnum(code);
+}
+
+pub fn asReadError(err: c_int) ?std.net.Stream.ReadError {
+    return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
+        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
+        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
+        .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
+        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        else => null,
+    };
+}
+
+pub fn asWriteError(err: c_int) ?std.net.Stream.WriteError {
+    return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
+        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
+        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
+        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        else => null,
+    };
+}
+
+pub fn check(code: c_int) !void {
+    const err = std.meta.intToEnum(WolfSslStatusCodes, code) catch
+        return WolfSslErrors.WolfSSLUnknownError;
+
+    // return ok
+    if (err == .SUCCESS) return;
+
+    var buffer: [c.WOLFSSL_MAX_ERROR_SZ + 1]u8 = undefined;
+    const long_code: c_ulong = std.math.cast(c_ulong, -code) orelse 0;
+    const err_string = c.wolfSSL_ERR_error_string(
+        long_code,
+        &buffer,
+    );
+
+    const string = @as(?[*:0]const u8, err_string) orelse "unknown";
+    const err_name = std.mem.sliceTo(string, 0);
+
+    var writer = std.io.getStdErr().writer();
+    try writer.print("WolfSSL Error: {d} {s} : {any}\n", .{ code, err_name, err });
+    return WolfSslErrors.WolfSSLError;
 }
 
 pub const WolfSslStatusCodes = enum(c_int) {

@@ -5,10 +5,10 @@ pub fn main() !void {
     try ssl.init();
     defer ssl.deinit();
 
-    var context = try ssl.Context.init(.TLSv1_2_Client);
+    var context = try ssl.Context.init(.TLSv1_3_Client);
     defer context.deinit();
 
-    try context.useCertificateAuthority("./certs/ca-certificate.pem");
+    // try context.useCertificateAuthority("./certs/ca-certificate.pem");
 
     const address = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, 8044);
 

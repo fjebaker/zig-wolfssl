@@ -1,15 +1,17 @@
 pub usingnamespace @cImport({
-    @cDefine("WOLFSSL_TLS13", "");
-    @cDefine("SESSION_INDEX", "");
-    @cDefine("SESSION_CERTS", "");
+    // @cDefine("WOLFSSL_TLS13", "");
+    // @cDefine("FP_MAX_BITS", "16384");
+    // @cDefine("HAVE_TLS_EXTENSIONS", "");
+    // @cDefine("SESSION_INDEX", "");
+    // @cDefine("SESSION_CERTS", "");
 
+    // from options.h
     @cDefine("WOLFSSL_HAVE_ATOMIC_H", "");
     @cDefine("HAVE_C___ATOMIC", "1");
     @cDefine("HAVE_THREAD_LS", "");
+    @cDefine("DEBUG_WOLFSSL", "");
     @cDefine("NO_DO178", "");
-    // this should be arch specific
     @cDefine("WOLFSSL_X86_64_BUILD", "");
-
     @cDefine("ERROR_QUEUE_PER_THREAD", "");
     @cDefine("TFM_TIMING_RESISTANT", "");
     @cDefine("ECC_TIMING_RESISTANT", "");
@@ -34,22 +36,13 @@ pub usingnamespace @cImport({
     @cDefine("HAVE_POLY1305", "");
     @cDefine("HAVE_CHACHA", "");
     @cDefine("HAVE_HASHDRBG", "");
-    @cDefine("NO_INLINE", "");
-    @cDefine("HAVE_TLS_EXTENSIONS", "");
-    @cDefine("HAVE_SNI", "");
     @cDefine("HAVE_TLS_EXTENSIONS", "");
     @cDefine("HAVE_SUPPORTED_CURVES", "");
     @cDefine("HAVE_FFDHE_2048", "");
     @cDefine("HAVE_SUPPORTED_CURVES", "");
+    @cDefine("WOLFSSL_TLS13", "");
     @cDefine("HAVE_TLS_EXTENSIONS", "");
     @cDefine("HAVE_EXTENDED_MASTER", "");
-    @cDefine("HAVE_TLS_EXTENSIONS", "");
-    @cDefine("HAVE_SNI", "");
-    @cDefine("HAVE_MAX_FRAGMENT", "");
-    @cDefine("HAVE_TRUNCATED_HMAC", "");
-    @cDefine("HAVE_ALPN", "");
-    @cDefine("HAVE_TRUSTED_CA", "");
-    @cDefine("HAVE_SUPPORTED_CURVES", "");
     @cDefine("NO_RC4", "");
     @cDefine("HAVE_ENCRYPT_THEN_MAC", "");
     @cDefine("NO_PSK", "");
@@ -64,7 +57,8 @@ pub usingnamespace @cImport({
     @cDefine("HAVE_AESGCM", "");
     @cDefine("HAVE_TLS_EXTENSIONS", "");
     @cDefine("HAVE_SERVER_RENEGOTIATION_INFO", "");
-    @cDefine("HAVE___UINT128_T 1", "");
+    @cDefine("HAVE___UINT128_T", "1");
+    @cDefine("WOLFSSL_TEST_STATIC_BUILD", "");
     @cDefine("HAVE_WC_INTROSPECTION", "");
 
     @cInclude("wolfssl/ssl.h");

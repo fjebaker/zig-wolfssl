@@ -54,23 +54,40 @@ pub fn build(b: *std.Build) void {
     });
     test_server.addModule("zigwolfssl", wolfssl_module);
     test_server.linkLibrary(wolfssl_lib);
+    // test_server.addIncludePath(
+    //     std.build.LazyPath.relative("../wolfssl/zig-out/include"),
+    //     std.build.LazyPath.relative("../wolfssl/"),
+    // );
+    // test_server.addLibraryPath(
+    //     std.build.LazyPath.relative("../wolfssl/zig-out/lib"),
+    //     std.build.LazyPath.relative("../wolfssl/src/.libs"),
+    // );
+    // test_server.addIncludePath(
+    //     std.build.LazyPath.relative("../wolfssl/zig-out/include"),
+    // );
+    // test_server.addLibraryPath(
+    //     std.build.LazyPath.relative("../wolfssl/zig-out/lib"),
+    // );
+    // test_server.linkSystemLibrary("wolfssl");
+    // test_server.linkSystemLibrary("asan");
+    test_server.linkLibC();
 
     const run_test_server = b.addRunArtifact(test_server);
 
     const server_step = b.step("server", "Run test server");
     server_step.dependOn(&run_test_server.step);
 
-    const test_client = b.addExecutable(.{
-        .name = "client",
-        .root_source_file = .{ .path = "examples/client.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-    test_client.addModule("zigwolfssl", wolfssl_module);
-    test_client.linkLibrary(wolfssl_lib);
+    // const test_client = b.addExecutable(.{
+    //     .name = "client",
+    //     .root_source_file = .{ .path = "examples/client.zig" },
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
+    // test_client.addModule("zigwolfssl", wolfssl_module);
+    // test_client.linkLibrary(wolfssl_lib);
 
-    const run_test_client = b.addRunArtifact(test_client);
+    // const run_test_client = b.addRunArtifact(test_client);
 
-    const client_step = b.step("client", "Run test client");
-    client_step.dependOn(&run_test_client.step);
+    // const client_step = b.step("client", "Run test client");
+    // client_step.dependOn(&run_test_client.step);
 }
