@@ -15,14 +15,16 @@ pub fn main() !void {
     var server = std.net.StreamServer.init(.{ .reuse_address = true });
     defer server.deinit();
 
-    const address = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, 8044);
+    const address = std.net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, 8080);
     try server.listen(address);
 
     std.debug.print("Listening...\n", .{});
 
     var buffer: [2048]u8 = undefined;
     while (true) {
-        var conn = try server.accept();
+        var conn = server.accept() catch {
+            continue;
+        };
         defer conn.stream.close();
 
         std.debug.print("Accepted\n", .{});
@@ -33,7 +35,9 @@ pub fn main() !void {
         const r_size = try ssl.read(&buffer);
         std.debug.print("R: {d} : {s}\n", .{ r_size, buffer[0..r_size] });
 
-        const w_size = try ssl.write("Thank you!\n");
-        std.debug.print("W: {d}\n", .{w_size});
+        try ssl.writer().print(
+            "Read: '{s}' : thank you!\n",
+            .{buffer[0..r_size]},
+        );
     }
 }
