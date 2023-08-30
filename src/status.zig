@@ -14,6 +14,7 @@ pub fn readErr(err: std.net.Stream.ReadError) c_int {
         error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
         error.ConnectionTimedOut => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_TIMEOUT,
+        error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
         else => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_GENERAL,
     };
     return @intFromEnum(code);
@@ -23,6 +24,7 @@ pub fn writeErr(err: std.net.Stream.WriteError) c_int {
     const code = switch (err) {
         error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
+        error.OperationAborted, error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
         else => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_GENERAL,
     };
     return @intFromEnum(code);
@@ -34,6 +36,7 @@ pub fn asReadError(err: c_int) ?std.net.Stream.ReadError {
         .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
         .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
         .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        .WOLFSSL_CBIO_ERR_CONN_CLOSE => error.BrokenPipe,
         else => null,
     };
 }
@@ -43,6 +46,7 @@ pub fn asWriteError(err: c_int) ?std.net.Stream.WriteError {
         .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
         .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
         .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        .WOLFSSL_CBIO_ERR_CONN_CLOSE => error.BrokenPipe,
         else => null,
     };
 }
