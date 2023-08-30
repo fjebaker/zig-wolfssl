@@ -56,9 +56,7 @@ pub const Ssl = struct {
         const read_bytes = c.wolfSSL_read(self.ssl, buffer.ptr, len);
         if (read_bytes < 0) {
             const err = c.wolfSSL_get_error(self.ssl, read_bytes);
-            return status.asReadError(err) orelse {
-                return ReadError.InputOutput;
-            };
+            return status.asReadError(err);
         }
         return @intCast(read_bytes);
     }
@@ -68,11 +66,9 @@ pub const Ssl = struct {
 
         const len: c_int = @intCast(buffer.len);
         const write_bytes = c.wolfSSL_write(self.ssl, buffer.ptr, len);
-        if (write_bytes < 0) {
+        if (write_bytes < 0 or (buffer.len != 0 and write_bytes == 0)) {
             const err = c.wolfSSL_get_error(self.ssl, write_bytes);
-            return status.asWriteError(err) orelse {
-                return WriteError.InputOutput;
-            };
+            return status.asWriteError(err);
         }
         return @intCast(write_bytes);
     }
@@ -141,8 +137,9 @@ pub const Context = struct {
 
         const stream: *std.net.Stream = @ptrCast(@alignCast(ctx.?));
         const read_len = stream.read(buf[0..@intCast(len)]) catch |err| {
-            std.debug.print("RECV ERR: {}\n", .{err});
-            return status.readErr(err);
+            const code = status.readErr(err);
+            std.debug.print("RECV ERR: {any} {}\n", .{ code, err });
+            return code;
         };
 
         if (read_len == 0)
@@ -160,8 +157,9 @@ pub const Context = struct {
 
         const stream: *std.net.Stream = @ptrCast(@alignCast(ctx.?));
         const write_len = stream.write(buf[0..@intCast(len)]) catch |err| {
-            std.debug.print("SEND ERR: {}\n", .{err});
-            return status.writeErr(err);
+            const code = status.writeErr(err);
+            std.debug.print("SEND ERR: {any} {}\n", .{ code, err });
+            return code;
         };
 
         if (write_len == 0)

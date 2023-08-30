@@ -11,10 +11,11 @@ pub const WriteError = std.net.Stream.WriteError;
 
 pub fn readErr(err: std.net.Stream.ReadError) c_int {
     const code = switch (err) {
-        error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
+        error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
         error.ConnectionTimedOut => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_TIMEOUT,
-        error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
+        error.OperationAborted => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_ISR,
+        error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         else => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_GENERAL,
     };
     return @intFromEnum(code);
@@ -22,32 +23,40 @@ pub fn readErr(err: std.net.Stream.ReadError) c_int {
 
 pub fn writeErr(err: std.net.Stream.WriteError) c_int {
     const code = switch (err) {
-        error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
+        error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
         error.ConnectionResetByPeer => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_RST,
-        error.OperationAborted, error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,
+        error.OperationAborted => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_ISR,
+        error.WouldBlock => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_WANT_READ,
         else => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_GENERAL,
     };
     return @intFromEnum(code);
 }
 
-pub fn asReadError(err: c_int) ?std.net.Stream.ReadError {
+pub fn asReadError(err: c_int) std.net.Stream.ReadError {
     return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
-        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
-        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
-        .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
-        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        .UNKNOWN => error.Unexpected,
         .WOLFSSL_CBIO_ERR_CONN_CLOSE => error.BrokenPipe,
-        else => null,
+        .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
+        .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
+        .WOLFSSL_CBIO_ERR_ISR => error.OperationAborted,
+        .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
+        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
+        else => error.Unexpected,
     };
 }
 
-pub fn asWriteError(err: c_int) ?std.net.Stream.WriteError {
+pub fn asWriteError(err: c_int) std.net.Stream.WriteError {
     return switch (@as(WolfSslStatusCodes, @enumFromInt(err))) {
-        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
+        // from experience this is the case
+        .UNKNOWN => error.BrokenPipe,
+        // rest are pretty straight forward
+        .WOLFSSL_CBIO_ERR_CONN_CLOSE => error.BrokenPipe,
         .WOLFSSL_CBIO_ERR_CONN_RST => error.ConnectionResetByPeer,
         .WOLFSSL_CBIO_ERR_GENERAL => error.InputOutput,
-        .WOLFSSL_CBIO_ERR_CONN_CLOSE => error.BrokenPipe,
-        else => null,
+        .WOLFSSL_CBIO_ERR_ISR => error.OperationAborted,
+        .WOLFSSL_CBIO_ERR_TIMEOUT => error.Unexpected,
+        .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
+        else => error.Unexpected,
     };
 }
 
