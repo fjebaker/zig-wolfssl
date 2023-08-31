@@ -32,6 +32,11 @@ pub const Ssl = struct {
         self.* = undefined;
     }
 
+    pub fn closeNotify(self: *Ssl) !void {
+        const ret = c.wolfSSL_Shutdown(self.ssl);
+        try status.check(ret);
+    }
+
     pub fn reader(self: *Ssl) Reader {
         return .{ .context = self };
     }
