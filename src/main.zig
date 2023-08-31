@@ -33,7 +33,7 @@ pub const Ssl = struct {
     }
 
     pub fn closeNotify(self: *Ssl) !void {
-        const ret = c.wolfSSL_Shutdown(self.ssl);
+        const ret = c.wolfSSL_shutdown(self.ssl);
         try status.check(ret);
     }
 
