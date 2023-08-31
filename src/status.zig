@@ -9,6 +9,10 @@ pub const WolfSslErrors = error{
 pub const ReadError = std.net.Stream.ReadError;
 pub const WriteError = std.net.Stream.WriteError;
 
+pub inline fn isSuccess(code: c_int) bool {
+    return code == @intFromEnum(WolfSslStatusCodes.SUCCESS);
+}
+
 pub fn readErr(err: std.net.Stream.ReadError) c_int {
     const code = switch (err) {
         error.BrokenPipe => WolfSslStatusCodes.WOLFSSL_CBIO_ERR_CONN_CLOSE,

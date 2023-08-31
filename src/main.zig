@@ -33,8 +33,14 @@ pub const Ssl = struct {
     }
 
     pub fn closeNotify(self: *Ssl) !void {
-        const ret = c.wolfSSL_shutdown(self.ssl);
-        try status.check(ret);
+        var ret: c_int = c.SSL_SHUTDOWN_NOT_DONE;
+        while (ret == c.SSL_SHUTDOWN_NOT_DONE) {
+            ret = c.wolfSSL_shutdown(self.ssl);
+        }
+        if (!status.isSuccess(ret)) {
+            const code = c.wolfSSL_get_error(self.ssl, ret);
+            try status.check(code);
+        }
     }
 
     pub fn reader(self: *Ssl) Reader {
