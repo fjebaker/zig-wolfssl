@@ -48,6 +48,8 @@ pub const Ssl = struct {
         if (!status.isSuccess(ret)) {
             // try to get more detailed information
             const code = c.wolfSSL_get_error(self.ssl, ret);
+            // check if an error actually occured
+            if (code == c.SSL_ERROR_NONE) return;
             try status.check(code);
         }
     }
