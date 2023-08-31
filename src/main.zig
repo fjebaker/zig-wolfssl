@@ -19,6 +19,10 @@ pub const Ssl = struct {
     pub const Reader = std.io.Reader(*Ssl, ReadError, read);
     pub const Writer = std.io.Writer(*Ssl, WriteError, write);
 
+    const CLOSE_NOTIFY_ATTEMPTS = 10;
+
+    pub const SslErrors = error{CloseNotifyFailed};
+
     ssl: *c.WOLFSSL,
     stream: std.net.Stream,
 
@@ -34,10 +38,15 @@ pub const Ssl = struct {
 
     pub fn closeNotify(self: *Ssl) !void {
         var ret: c_int = c.SSL_SHUTDOWN_NOT_DONE;
+        var count: usize = 0;
         while (ret == c.SSL_SHUTDOWN_NOT_DONE) {
             ret = c.wolfSSL_shutdown(self.ssl);
+            count += 1;
+            if (count > CLOSE_NOTIFY_ATTEMPTS)
+                return SslErrors.CloseNotifyFailed;
         }
         if (!status.isSuccess(ret)) {
+            // try to get more detailed information
             const code = c.wolfSSL_get_error(self.ssl, ret);
             try status.check(code);
         }
