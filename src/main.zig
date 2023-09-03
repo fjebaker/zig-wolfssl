@@ -149,6 +149,19 @@ pub const Context = struct {
         try status.check(ret);
     }
 
+    pub const Verification = enum { NoVerify, VerifyPeer };
+
+    fn toCode(verify: Verification) c_int {
+        return switch (verify) {
+            .NoVerify => c.WOLFSSL_VERIFY_NONE,
+            .VerifyPeer => c.WOLFSSL_VERIFY_PEER | c.WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+        };
+    }
+
+    pub fn setVerify(self: *Context, verify: Verification) void {
+        c.wolfSSL_CTX_set_verify(self.ctx, toCode(verify), null);
+    }
+
     fn ctxIORecv(
         _: ?*c.WOLFSSL,
         buf: [*c]u8,
