@@ -54,6 +54,8 @@ pub fn build(b: *std.Build) void {
     });
     test_server.addModule("zigwolfssl", wolfssl_module);
     test_server.linkLibrary(wolfssl_lib);
+
+    b.installArtifact(test_server);
     // test_server.addIncludePath(
     //     std.build.LazyPath.relative("../wolfssl/zig-out/include"),
     //     std.build.LazyPath.relative("../wolfssl/"),
