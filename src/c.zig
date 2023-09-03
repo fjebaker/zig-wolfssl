@@ -6,8 +6,6 @@ pub usingnamespace @cImport({
     // @cDefine("SESSION_CERTS", "");
 
     // from options.h
-    @cDefine("WOLFSSL_HAVE_ATOMIC_H", "");
-    @cDefine("HAVE_C___ATOMIC", "1");
     @cDefine("HAVE_THREAD_LS", "");
     @cDefine("DEBUG_WOLFSSL", "");
     @cDefine("NO_DO178", "");
