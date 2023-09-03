@@ -45,7 +45,10 @@ pub fn asReadError(err: c_int) std.net.Stream.ReadError {
         .WOLFSSL_CBIO_ERR_ISR => error.OperationAborted,
         .WOLFSSL_CBIO_ERR_TIMEOUT => error.ConnectionTimedOut,
         .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
-        else => error.Unexpected,
+        else => |e| {
+            std.debug.print("asReadError: {any}\n", .{e});
+            return error.Unexpected;
+        },
     };
 }
 
@@ -60,7 +63,10 @@ pub fn asWriteError(err: c_int) std.net.Stream.WriteError {
         .WOLFSSL_CBIO_ERR_ISR => error.OperationAborted,
         .WOLFSSL_CBIO_ERR_TIMEOUT => error.Unexpected,
         .WOLFSSL_CBIO_ERR_WANT_READ => error.WouldBlock,
-        else => error.Unexpected,
+        else => |e| {
+            std.debug.print("asWriteError: {any}\n", .{e});
+            return error.Unexpected;
+        },
     };
 }
 
